@@ -155,6 +155,7 @@ fn relaunch(loptions: &LaunchOptions, moptions: &MonitorOptions) -> Result<Relau
         }
         if let Some(ref path_stderr) = moptions.stderr {
             let stderr = std::fs::File::create(path_stderr).map_err(|e| RelaunchError::StderrErr(e))?;
+            cmd.stderr(stderr);
         }
 
         start_count += 1;
