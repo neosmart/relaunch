@@ -1,4 +1,5 @@
 extern crate getopts;
+extern crate time;
 
 use getopts::{Options, Matches};
 use std::path::PathBuf;
@@ -112,13 +113,20 @@ fn main() {
         };
     };
 
-    let logger = |s: &str| match moptions.log {
-        None => println!("{}", s),
-        Some(_) => {
+    let logger = |s: &str| {
+        println!("{}", s);
+
+        if moptions.log.is_some() {
             use std::io::prelude::*;
-            println!("{}", s);
-            let mut bytes: Vec<u8> = s.bytes().collect();
+
+            let prefix = format!("{} - ", time::now_utc().rfc3339());
+            let mut bytes: Vec<u8> = prefix.bytes().collect();
+
+            for b in s.bytes() {
+                bytes.push(b);
+            }
             bytes.push(b'\n');
+
             let mut logfile = match logfile {
                 Some(ref l) => l,
                 _ => panic!(),
