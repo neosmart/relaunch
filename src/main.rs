@@ -103,7 +103,7 @@ fn main() {
 
     //initialize logger
     if let Some(ref p) = moptions.log {
-        logfile = match std::fs::File::create(&p) {
+        logfile = match std::fs::OpenOptions::new().append(true).open(&p) {
             Err(e) => {
                 eprintln!("Could not create log file: {}", e.description());
                 std::process::exit(-1);
@@ -171,8 +171,8 @@ fn unwrap_argument2<T>(matches: &Matches, arg: &'static str) -> T
 fn relaunch<L>(loptions: &LaunchOptions, moptions: &MonitorOptions, mut logger: L) -> Result<RelaunchResult, RelaunchError>
     where L: FnMut(&str) -> ()
 {
+    use std::fs::OpenOptions;
     use std::process::Command;
-
 
     let mut fail_count = 0;
     let mut start_count = 0;
@@ -183,11 +183,11 @@ fn relaunch<L>(loptions: &LaunchOptions, moptions: &MonitorOptions, mut logger: 
         cmd.args(&loptions.args);
 
         if let Some(ref path_stdout) = moptions.stdout {
-            let stdout = std::fs::File::create(path_stdout).map_err(|e| RelaunchError::StdoutErr(e))?;
+            let stdout = OpenOptions::new().append(true).open(path_stdout).map_err(|e| RelaunchError::StdoutErr(e))?;
             cmd.stdout(stdout);
         }
         if let Some(ref path_stderr) = moptions.stderr {
-            let stderr = std::fs::File::create(path_stderr).map_err(|e| RelaunchError::StderrErr(e))?;
+            let stderr = OpenOptions::new().append(true).open(path_stderr).map_err(|e| RelaunchError::StderrErr(e))?;
             cmd.stderr(stderr);
         }
 
