@@ -1,7 +1,7 @@
 extern crate getopts;
 
 use getopts::{Options, Matches};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::error::Error;
 
 fn print_usage(opts: Options) {
@@ -75,13 +75,13 @@ fn main() {
         moptions.restart_interval = Some(unwrap_argument(&matches, "i", "-i/--max-restart-interval requires a numeric value!"));
     }
     if matches.opt_present("o") {
-        moptions.stdout = Some(unwrap_argument2(&matches, "o", ""));
+        moptions.stdout = Some(unwrap_argument2(&matches, "o"));
     }
     if matches.opt_present("e") {
-        moptions.stderr = Some(unwrap_argument2(&matches, "e", ""));
+        moptions.stderr = Some(unwrap_argument2(&matches, "e"));
     }
     if matches.opt_present("l") {
-        moptions.log = Some(unwrap_argument2(&matches, "l", ""));
+        moptions.log = Some(unwrap_argument2(&matches, "l"));
     }
     if matches.opt_present("a") {
         moptions.restart_always = true;
@@ -119,7 +119,7 @@ fn main() {
     std::process::exit(exit_code);
 }
 
-fn unwrap_argument<T>(matches: &Matches, arg: &str, msg: &'static str) -> T
+fn unwrap_argument<T>(matches: &Matches, arg: &'static str, msg: &'static str) -> T
     where T: std::str::FromStr
 {
     match matches.opt_str(arg).unwrap().parse::<T>() {
@@ -131,7 +131,7 @@ fn unwrap_argument<T>(matches: &Matches, arg: &str, msg: &'static str) -> T
     }
 }
 
-fn unwrap_argument2<T>(matches: &Matches, arg: &str, msg: &'static str) -> T
+fn unwrap_argument2<T>(matches: &Matches, arg: &'static str) -> T
     where T: std::convert::From<String>
 {
     matches.opt_str(arg).unwrap().into()
