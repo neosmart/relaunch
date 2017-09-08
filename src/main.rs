@@ -99,7 +99,36 @@ fn main() {
         args: passthru_args,
     };
 
-    let exit_code = match relaunch(&loptions, &moptions) {
+    let mut logfile = None;
+
+    //initialize logger
+    if let Some(ref p) = moptions.log {
+        logfile = match std::fs::File::create(&p) {
+            Err(e) => {
+                eprintln!("Could not create log file: {}", e.description());
+                std::process::exit(-1);
+            },
+            Ok(p) => Some(p)
+        };
+    };
+
+    let logger = |s: &str| match moptions.log {
+        None => println!("{}", s),
+        Some(_) => {
+            use std::io::prelude::*;
+            println!("{}", s);
+            let bytes: Vec<u8> = s.bytes().collect();
+            let mut logfile = match logfile {
+                Some(ref l) => l,
+                _ => panic!(),
+            };
+            if let Err(e) = logfile.write_all(&bytes) {
+                eprintln!("Error writing to log file: {}!", e.description());
+            }
+        }
+    };
+
+    let exit_code = match relaunch(&loptions, &moptions, logger) {
         Ok(result) => match result {
             RelaunchResult::Ok => 0,
             RelaunchResult::OkAfterRestart(_) => 0,
@@ -107,6 +136,7 @@ fn main() {
         },
         Err(err) => {
             let msg = match err {
+                RelaunchError::LaunchErr(e) => format!("Error launching target: {}", e.description()),
                 RelaunchError::StderrErr(e) => format!("Error redirecting stderr to file: {}", e.description()),
                 RelaunchError::StdoutErr(e) => format!("Error redirecting stdout to file: {}", e.description()),
             };
@@ -137,7 +167,9 @@ fn unwrap_argument2<T>(matches: &Matches, arg: &'static str) -> T
     matches.opt_str(arg).unwrap().into()
 }
 
-fn relaunch(loptions: &LaunchOptions, moptions: &MonitorOptions) -> Result<RelaunchResult, RelaunchError> {
+fn relaunch<L>(loptions: &LaunchOptions, moptions: &MonitorOptions, mut logger: L) -> Result<RelaunchResult, RelaunchError>
+    where L: FnMut(&str) -> ()
+{
     use std::process::Command;
 
 
@@ -158,8 +190,11 @@ fn relaunch(loptions: &LaunchOptions, moptions: &MonitorOptions) -> Result<Relau
             cmd.stderr(stderr);
         }
 
+        let mut child = cmd.spawn().map_err(|e| RelaunchError::LaunchErr(e))?;
+        logger(&format!("Monitoring new child process {} with pid {}", loptions.exe, child.id()));
+
         start_count += 1;
-        let status = cmd.status().unwrap();
+        let status = child.wait().unwrap();
 
         if status.success() && !moptions.restart_always {
             break;
@@ -233,6 +268,7 @@ enum RelaunchResult {
 }
 
 enum RelaunchError {
+    LaunchErr(std::io::Error),
     StdoutErr(std::io::Error),
     StderrErr(std::io::Error),
 }
