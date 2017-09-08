@@ -196,11 +196,16 @@ fn relaunch<L>(loptions: &LaunchOptions, moptions: &MonitorOptions, mut logger: 
         start_count += 1;
         let status = child.wait().unwrap();
 
-        if status.success() && !moptions.restart_always {
-            break;
-        }
         if !status.success() {
+            logger(&format!("Child process {} exited {}", loptions.exe, match status.code() {
+                Some(x) => format!("exit code {}", x),
+                None => "due to signal!".to_owned(),
+            }));
             fail_count += 1;
+        }
+        if status.success() && !moptions.restart_always {
+            logger(&format!("Child process {} exited normally.", loptions.exe));
+            break;
         }
 
         //unix processes exited by a signal return no status code
@@ -212,6 +217,7 @@ fn relaunch<L>(loptions: &LaunchOptions, moptions: &MonitorOptions, mut logger: 
         };
 
         if !restart {
+            logger(&format!("Max restart count exceeded, terminating relaunch of process {}", loptions.exe));
             break;
         }
     }
