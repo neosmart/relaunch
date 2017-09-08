@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use std::error::Error;
 
 fn print_usage(opts: Options) {
-    let brief = format!("Usage: {} TARGET [-- TARGET_OPTIONS]", opts.short_usage("relaunch"));
+    let brief = format!("{} TARGET [-- TARGET_OPTIONS]", opts.short_usage("relaunch"));
     print!("{}", opts.usage(&brief));
 }
 
@@ -37,7 +37,7 @@ fn main() {
     opts.optflag("a", "always-restart", "Always restart target, even on clean exit");
     // opts.optopt("j", "instances", "The number of instances of target to run in parallel", "N");
     opts.optopt("m", "max-restarts", "The maximum number of times to restart a process", "N");
-    opts.optopt("i", "max-restart-interval", "Reset restart counter after SEC second", "SECS");
+    opts.optopt("i", "restart-interval", "Reset restart counter after SECS seconds", "SECS");
     opts.optopt("o", "stdout", "Redirect target stdout to PATH", "PATH");
     opts.optopt("e", "stderr", "Redirect target stderr to PATH", "PATH");
     opts.optopt("l", "log", "Path to relaunch output log", "PATH");
