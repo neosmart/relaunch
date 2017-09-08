@@ -117,7 +117,8 @@ fn main() {
         Some(_) => {
             use std::io::prelude::*;
             println!("{}", s);
-            let bytes: Vec<u8> = s.bytes().collect();
+            let mut bytes: Vec<u8> = s.bytes().collect();
+            bytes.push(b'\n');
             let mut logfile = match logfile {
                 Some(ref l) => l,
                 _ => panic!(),
@@ -203,9 +204,12 @@ fn relaunch<L>(loptions: &LaunchOptions, moptions: &MonitorOptions, mut logger: 
             }));
             fail_count += 1;
         }
-        if status.success() && !moptions.restart_always {
+        if status.success() {
             logger(&format!("Child process {} exited normally.", loptions.exe));
-            break;
+            if !moptions.restart_always {
+                logger(&format!("Monitoring of process {} complete, exiting.", loptions.exe));
+                break;
+            }
         }
 
         //unix processes exited by a signal return no status code
