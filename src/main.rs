@@ -35,7 +35,7 @@ fn main() {
 
     let mut opts = Options::new();
     opts.optflag("a", "always-restart", "Always restart target, even on clean exit");
-    opts.optopt("j", "instances", "The number of instances of target to run in parallel", "N");
+    // opts.optopt("j", "instances", "The number of instances of target to run in parallel", "N");
     opts.optopt("m", "max-restarts", "The maximum number of times to restart a process", "N");
     opts.optopt("i", "max-restart-interval", "Reset restart counter after SEC second", "SECS");
     opts.optopt("o", "stdout", "Redirect target stdout to PATH", "PATH");
@@ -65,9 +65,9 @@ fn main() {
     let mut moptions = MonitorOptions::new();
     // let mut loptions = LaunchOptions::new();
 
-    if matches.opt_present("j") {
-        moptions.instances = unwrap_argument(&matches, "j", "-j/--instances requires a numeric value!");
-    }
+    // if matches.opt_present("j") {
+    //     moptions.instances = unwrap_argument(&matches, "j", "-j/--instances requires a numeric value!");
+    // }
     if matches.opt_present("m") {
         moptions.max_restarts = Some(unwrap_argument(&matches, "m", "-m/--max-restarts requires a numeric value!"));
     }
@@ -201,7 +201,7 @@ struct LaunchOptions<'a> {
 
 #[derive(Debug)]
 struct MonitorOptions {
-    instances: i32,
+    // instances: i32,
     max_restarts: Option<i32>,
     restart_always: bool,
     restart_interval: Option<i32>,
@@ -214,7 +214,7 @@ struct MonitorOptions {
 impl MonitorOptions {
     fn new() -> Self {
         MonitorOptions {
-            instances: 1,
+            // instances: 1,
             max_restarts: Option::None,
             restart_always: false,
             restart_interval: Option::None,
